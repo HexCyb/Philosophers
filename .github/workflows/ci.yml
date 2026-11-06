@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: build + behaviour tests (${{ matrix.cc }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cc: [gcc, clang]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build philo and philo_bonus (-Wall -Wextra -Werror)
+        run: make CC=${{ matrix.cc }}
+      - name: Deaths on time, no avoidable death, meal goals, invalid input
+        run: python3 tests/run_tests.py
+
+  sanitizers:
+    name: ThreadSanitizer + Valgrind
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No data race (ThreadSanitizer)
+        run: |
+          sudo sysctl vm.mmap_rnd_bits=28
+          make tsan
+      - name: No leak (Valgrind)
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq valgrind
+          make re
+          valgrind --leak-check=full --errors-for-leak-kinds=all --error-exitcode=1 ./philo/philo 4 800 200 200 2 > /dev/null
+          valgrind --leak-check=full --trace-children=yes --error-exitcode=1 ./philo_bonus/philo_bonus 4 800 200 200 2 > /dev/null
