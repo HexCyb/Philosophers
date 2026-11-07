@@ -13,7 +13,7 @@ jobs:
       matrix:
         cc: [gcc, clang]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build philo and philo_bonus (-Wall -Wextra -Werror)
         run: make CC=${{ matrix.cc }}
       - name: Deaths on time, no avoidable death, meal goals, invalid input
@@ -23,7 +23,7 @@ jobs:
     name: ThreadSanitizer + Valgrind
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: No data race (ThreadSanitizer)
         run: |
           sudo sysctl vm.mmap_rnd_bits=28
